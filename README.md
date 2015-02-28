@@ -1,6 +1,7 @@
 # iCracked
 
 The iCracked Mobile Devices API
+
 iCracked has a public API that exposes the devices that we service.
 
 Our api’s base path is:
