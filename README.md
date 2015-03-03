@@ -25,8 +25,7 @@ GET /mobiledevices/2/models/3
 
 Query networks, colors, sizes, or conditions for a model
 
-GET /mobiledevices/2/models/3/networks
-(orcolors,sizes,conditions)
+GET /mobiledevices/2/models/3/networks (or colors, sizes, conditions)
 
 To submit a repair request, the user navigates through our "Repair Flows" at:
 www.icracked.com/repair
