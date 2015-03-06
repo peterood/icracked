@@ -26,9 +26,11 @@ function getDevices() {
 }
 
 function selectDevice(event) {
+  document.querySelector(".devices").removeEventListener('click', selectDevice);
+
   var deviceSelected = event.target.src || "",
       message = document.querySelector("header h2"),
-      model = 0;
+      device = 0;
 
   if (deviceSelected.search("ipod") !== -1) {
     deviceSelected = "ipod";
@@ -43,19 +45,19 @@ function selectDevice(event) {
   switch (deviceSelected) {
     case "ipod":
       message.innerHTML = "What Model iPod?";
-      model = 1;
+      device = 1;
       break;
     case "iphone":
       message.innerHTML = "What Model iPhone?";
-      model = 2;
+      device = 2;
       break;
     case "ipad":
       message.innerHTML = "What Model iPad?";
-      model = 3;
+      device = 3;
       break;
     case "samsung":
       message.innerHTML = "What Model Samsung?";
-      model = 4;
+      device = 4;
       break;
     default:
       break;
@@ -65,21 +67,23 @@ function selectDevice(event) {
   var stateObj = { foo: "bar" };
   history.pushState(stateObj, "Select Model", deviceSelected);
 
-  selectModel(model);
+  selectModels(device);
 }
 
-function selectModel(model) {
+function selectModels(device) {
   var mobileDeviceModels;
 
   // get mobile device models
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + model + '/models', true);
+  xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + device + '/models', true);
 
   xhr.onload = function(e) {
     if (this.status == 200) {
       mobileDeviceModels = JSON.parse(this.response);
 
       console.log(mobileDeviceModels);
+
+      document.querySelector("#container").setAttribute("class", "models");
 
       // render mobile models
       var models = document.querySelector(".models"),
@@ -89,19 +93,41 @@ function selectModel(model) {
       }
 
       models.innerHTML = modelsContent;
+
+      selectModel(mobileDeviceModels);
     }
   }
 
   xhr.send();
-
-  document.querySelector("#container").setAttribute("class", "models");
-
-  var models = document.querySelector(".models");
-  models.addEventListener("click", selectSpecs);
 }
 
-function selectSpecs(event) {
-  console.log(event.target);
+function selectModel(mobileDeviceModels) {
+  var deviceID,
+      model;
+  document.querySelector(".models").addEventListener("click", function(){
+    for (var i = 0; i < mobileDeviceModels.length; i++) {
+      if (event.target.innerHTML === mobileDeviceModels[i].name) {
+        deviceID = mobileDeviceModels[i].device_id;
+        model = mobileDeviceModels[i].id;
+        console.log("deviceID " + deviceID + " model " + model);
+      }
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/colors', true);
+
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        var mobileDeviceModel = JSON.parse(this.response);
+
+        console.log(mobileDeviceModel);
+
+        document.querySelector("header h2").innerHTML = "Excellent, what color is it?";
+      }
+    }
+
+    xhr.send();
+  });
 }
 
 getDevices();
