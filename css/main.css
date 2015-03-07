@@ -116,7 +116,7 @@ textarea {
   cursor: pointer
 }
 
-.models div {
+#container > div {
   border: 1px solid lightblue;
   cursor: pointer;
   display: inline-block;

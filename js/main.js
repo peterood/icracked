@@ -1,6 +1,34 @@
-var mobileDevices;
+var mobileDevices,
+    mobileDeviceModels,
+    mobileDeviceModelColors;
+
+var container = document.querySelector("#container");
+container.addEventListener("click", handleEvents);
+
+function handleEvents() {
+  console.log(event.target);
+  var selectStage = event.target.parentElement.className;
+
+  switch (selectStage) {
+    case "devices":
+      selectDevice(event);
+      break;
+    case "models":
+      selectModel();
+      break;
+    case "colors":
+      selectColor();
+      break;
+    case "networks":
+      selectNetwork();
+      break;
+    default:
+      break;
+  }
+}
 
 function getDevices() {
+  console.log("getDevices called");
   // get mobile devices
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices', true);
@@ -12,10 +40,7 @@ function getDevices() {
       // render mobile devices
       var devices = document.querySelector(".devices"),
           devicesContent = "";
-
-      // add event listener
-      devices.addEventListener('click', selectDevice);
-
+      
       for (var i = 0; i < mobileDevices.length; i++) {
         devices.innerHTML += '<img src="' + mobileDevices[i].image + '">';
       }
@@ -26,8 +51,8 @@ function getDevices() {
 }
 
 function selectDevice(event) {
-  document.querySelector(".devices").removeEventListener('click', selectDevice);
-
+  console.log("selectDevice called");
+  
   var deviceSelected = event.target.src || "",
       message = document.querySelector("header h2"),
       device = 0;
@@ -65,13 +90,7 @@ function selectDevice(event) {
 
   // set URL
   var stateObj = { foo: "bar" };
-  history.pushState(stateObj, "Select Model", deviceSelected);
-
-  selectModels(device);
-}
-
-function selectModels(device) {
-  var mobileDeviceModels;
+  history.pushState(stateObj, "Select Device", deviceSelected);
 
   // get mobile device models
   var xhr = new XMLHttpRequest();
@@ -93,41 +112,72 @@ function selectModels(device) {
       }
 
       models.innerHTML = modelsContent;
-
-      selectModel(mobileDeviceModels);
     }
   }
 
   xhr.send();
 }
 
-function selectModel(mobileDeviceModels) {
+function selectModel() {
+  console.log("selectModel called");
+  console.log(event.target.innerHTML);
+
   var deviceID,
-      model;
-  document.querySelector(".models").addEventListener("click", function(){
-    for (var i = 0; i < mobileDeviceModels.length; i++) {
-      if (event.target.innerHTML === mobileDeviceModels[i].name) {
-        deviceID = mobileDeviceModels[i].device_id;
-        model = mobileDeviceModels[i].id;
-        console.log("deviceID " + deviceID + " model " + model);
+  model;
+  
+  for (var i = 0; i < mobileDeviceModels.length; i++) {
+    if (event.target.innerHTML === mobileDeviceModels[i].name) {
+      deviceID = mobileDeviceModels[i].device_id;
+      model = mobileDeviceModels[i].id;
+      console.log("deviceID " + deviceID + " model " + model);
+    }
+  }
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/colors', true);
+
+  xhr.onload = function(e) {
+    if (this.status == 200) {
+      mobileDeviceModelColors = JSON.parse(this.response);
+
+      console.log(mobileDeviceModelColors);
+      container.setAttribute("class", "colors");
+      // selectColor(mobileDeviceModelColors);
+    }
+  }
+
+  xhr.send();
+}
+
+function selectColor() {
+  console.log("selectColor called");
+
+  document.querySelector("header h2").innerHTML = "Excellent, what color is it?";
+  var container = document.querySelector("#container");
+  container.innerHTML = "";
+  
+
+  for (var i = 0; i < mobileDeviceModelColors.length; i++) {
+    container.innerHTML += "<div>" + (mobileDeviceModelColors[i].name) + "</div>";
+  }
+
+  // selectNetwork(mobileDeviceModelColors);
+}
+
+function selectNetwork(mobileDeviceModelColors) {
+  console.log("selectNetwork called");
+
+
+  document.querySelector(".colors").addEventListener("click", function() {
+    console.log(event.target.innerHTML);
+
+    for (var i = 0; i < mobileDeviceModelColors.length; i++) {
+      console.log(mobileDeviceModelColors[i].name);
+      if (event.target.innerHTML === mobileDeviceModelColors[i].name) {
+
       }
     }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/colors', true);
-
-    xhr.onload = function(e) {
-      if (this.status == 200) {
-        var mobileDeviceModel = JSON.parse(this.response);
-
-        console.log(mobileDeviceModel);
-
-        document.querySelector("header h2").innerHTML = "Excellent, what color is it?";
-      }
-    }
-
-    xhr.send();
-  });
+  })
 }
 
 getDevices();
