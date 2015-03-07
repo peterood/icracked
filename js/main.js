@@ -1,12 +1,17 @@
-var mobileDevices,
+var container = document.querySelector("#container"),
+    deviceID,
+    mobileDevices,
     mobileDeviceModels,
-    mobileDeviceModelColors;
+    mobileDeviceModelColors,
+    mobileDeviceModelColor,
+    mobileDeviceModelConditions,
+    mobileDeviceModelNetworks,
+    model,
+    selectMessage = document.querySelector("header h2");
 
-var container = document.querySelector("#container");
 container.addEventListener("click", handleEvents);
 
 function handleEvents() {
-  console.log(event.target);
   var selectStage = event.target.parentElement.className;
 
   switch (selectStage) {
@@ -21,6 +26,9 @@ function handleEvents() {
       break;
     case "networks":
       selectNetwork();
+      break;
+    case "conditions":
+      selectCondition();
       break;
     default:
       break;
@@ -40,7 +48,7 @@ function getDevices() {
       // render mobile devices
       var devices = document.querySelector(".devices"),
           devicesContent = "";
-      
+
       for (var i = 0; i < mobileDevices.length; i++) {
         devices.innerHTML += '<img src="' + mobileDevices[i].image + '">';
       }
@@ -52,9 +60,8 @@ function getDevices() {
 
 function selectDevice(event) {
   console.log("selectDevice called");
-  
+
   var deviceSelected = event.target.src || "",
-      message = document.querySelector("header h2"),
       device = 0;
 
   if (deviceSelected.search("ipod") !== -1) {
@@ -69,19 +76,19 @@ function selectDevice(event) {
 
   switch (deviceSelected) {
     case "ipod":
-      message.innerHTML = "What Model iPod?";
+      selectMessage.innerHTML = "What Model iPod?";
       device = 1;
       break;
     case "iphone":
-      message.innerHTML = "What Model iPhone?";
+      selectMessage.innerHTML = "What Model iPhone?";
       device = 2;
       break;
     case "ipad":
-      message.innerHTML = "What Model iPad?";
+      selectMessage.innerHTML = "What Model iPad?";
       device = 3;
       break;
     case "samsung":
-      message.innerHTML = "What Model Samsung?";
+      selectMessage.innerHTML = "What Model Samsung?";
       device = 4;
       break;
     default:
@@ -99,8 +106,6 @@ function selectDevice(event) {
   xhr.onload = function(e) {
     if (this.status == 200) {
       mobileDeviceModels = JSON.parse(this.response);
-
-      console.log(mobileDeviceModels);
 
       document.querySelector("#container").setAttribute("class", "models");
 
@@ -120,16 +125,11 @@ function selectDevice(event) {
 
 function selectModel() {
   console.log("selectModel called");
-  console.log(event.target.innerHTML);
 
-  var deviceID,
-  model;
-  
   for (var i = 0; i < mobileDeviceModels.length; i++) {
     if (event.target.innerHTML === mobileDeviceModels[i].name) {
       deviceID = mobileDeviceModels[i].device_id;
       model = mobileDeviceModels[i].id;
-      console.log("deviceID " + deviceID + " model " + model);
     }
   }
 
@@ -140,9 +140,14 @@ function selectModel() {
     if (this.status == 200) {
       mobileDeviceModelColors = JSON.parse(this.response);
 
-      console.log(mobileDeviceModelColors);
       container.setAttribute("class", "colors");
-      // selectColor(mobileDeviceModelColors);
+      selectMessage.innerHTML = "Excellent, what color is it?";
+      container.innerHTML = "";
+
+
+      for (var i = 0; i < mobileDeviceModelColors.length; i++) {
+        container.innerHTML += "<div>" + mobileDeviceModelColors[i].name + "</div>";
+      }
     }
   }
 
@@ -152,32 +157,65 @@ function selectModel() {
 function selectColor() {
   console.log("selectColor called");
 
-  document.querySelector("header h2").innerHTML = "Excellent, what color is it?";
-  var container = document.querySelector("#container");
-  container.innerHTML = "";
-  
-
   for (var i = 0; i < mobileDeviceModelColors.length; i++) {
-    container.innerHTML += "<div>" + (mobileDeviceModelColors[i].name) + "</div>";
+    if (event.target.innerHTML === mobileDeviceModelColors[i].name) {
+      mobileDeviceModelColor = mobileDeviceModelColors[i].name;
+    }
   }
 
-  // selectNetwork(mobileDeviceModelColors);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/networks', true);
+
+  xhr.onload = function(e) {
+    if (this.status == 200) {
+      mobileDeviceModelNetworks = JSON.parse(this.response);
+
+      container.setAttribute("class", "networks");
+      selectMessage.innerHTML = "What Network Are You On?";
+      container.innerHTML = "";
+
+      for (var i = 0; i < mobileDeviceModelNetworks.length; i++) {
+        container.innerHTML += "<div>" + mobileDeviceModelNetworks[i].name + "</div>";
+      }
+    }
+  }
+
+  xhr.send();
 }
 
 function selectNetwork(mobileDeviceModelColors) {
   console.log("selectNetwork called");
 
+  for (var i = 0; i < mobileDeviceModelNetworks.length; i++) {
+    if (event.target.innerHTML === mobileDeviceModelNetworks[i].name) {
+      mobileDeviceModelNetworks = mobileDeviceModelNetworks[i].name;
+    }
+  }
 
-  document.querySelector(".colors").addEventListener("click", function() {
-    console.log(event.target.innerHTML);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/conditions', true);
 
-    for (var i = 0; i < mobileDeviceModelColors.length; i++) {
-      console.log(mobileDeviceModelColors[i].name);
-      if (event.target.innerHTML === mobileDeviceModelColors[i].name) {
+  xhr.onload = function(e) {
+    if (this.status == 200) {
+      mobileDeviceModelConditions = JSON.parse(this.response);
 
+      container.setAttribute("class", "conditions");
+      selectMessage.innerHTML = "And, what is the issue?";
+      container.innerHTML = "";
+
+      for (var i = 0; i < mobileDeviceModelConditions.length; i++) {
+        container.innerHTML += "<div>" + mobileDeviceModelConditions[i].text + "</div>";
       }
     }
-  })
+  }
+
+  xhr.send();
+}
+
+function selectCondition() {
+  console.log("selectCondition called");
+  selectMessage.innerHTML = "Thanks for choosing iCracked";
+  container.innerHTML = "We appreciate your <a href='https://github.com/peterood/icracked/issues'>feedback</a>.";
 }
 
 getDevices();
