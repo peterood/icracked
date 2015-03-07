@@ -1,5 +1,8 @@
+window.onload = getDevices;
+
 var container = document.querySelector("#container"),
     deviceID,
+    deviceSelected,
     mobileDevices,
     mobileDeviceModels,
     mobileDeviceModelColors,
@@ -7,7 +10,8 @@ var container = document.querySelector("#container"),
     mobileDeviceModelConditions,
     mobileDeviceModelNetworks,
     model,
-    selectMessage = document.querySelector("header h2");
+    selectMessage = document.querySelector("header h2"),
+    urlPath;
 
 container.addEventListener("click", handleEvents);
 
@@ -61,8 +65,9 @@ function getDevices() {
 function selectDevice(event) {
   console.log("selectDevice called");
 
-  var deviceSelected = event.target.src || "",
-      device = 0;
+  var device = 0;
+
+  deviceSelected = event.target.src || "";
 
   if (deviceSelected.search("ipod") !== -1) {
     deviceSelected = "ipod";
@@ -97,7 +102,8 @@ function selectDevice(event) {
 
   // set URL
   var stateObj = { foo: "bar" };
-  history.pushState(stateObj, "Select Device", deviceSelected);
+  urlPath = deviceSelected;
+  history.replaceState(stateObj, "Select Device", urlPath);
 
   // get mobile device models
   var xhr = new XMLHttpRequest();
@@ -133,6 +139,11 @@ function selectModel() {
     }
   }
 
+  // set URL
+  var stateObj = { foo: "bar" };
+  urlPath = deviceSelected + "/" + model;
+  history.replaceState(stateObj, "Select Model", urlPath);
+
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/colors', true);
 
@@ -163,6 +174,11 @@ function selectColor() {
     }
   }
 
+  // set URL
+  var stateObj = { foo: "bar" };
+  urlPath = model + "/" + mobileDeviceModelColor;
+  history.replaceState(stateObj, "Select Color", urlPath);
+
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/networks', true);
 
@@ -192,6 +208,11 @@ function selectNetwork(mobileDeviceModelColors) {
     }
   }
 
+  // set URL
+  var stateObj = { foo: "bar" };
+  urlPath = mobileDeviceModelColor + "/" + mobileDeviceModelNetworks;
+  history.replaceState(stateObj, "Select Model", urlPath);
+
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.icracked.com/v2/api/mobiledevices/' + deviceID + '/models/' + model + '/conditions', true);
 
@@ -217,5 +238,3 @@ function selectCondition() {
   selectMessage.innerHTML = "Thanks for choosing iCracked";
   container.innerHTML = "We appreciate your <a href='https://github.com/peterood/icracked/issues'>feedback</a>.";
 }
-
-getDevices();

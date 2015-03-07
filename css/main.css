@@ -123,6 +123,7 @@ textarea {
   height: 50px;
   line-height: 50px;
   margin: 10px;
+  overflow: hidden;
   text-align: center;
   width: 150px;
 }
